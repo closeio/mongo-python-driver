@@ -236,13 +236,20 @@ class SON(dict):
         return transform_value(dict(self))
 
     def __deepcopy__(self, memo):
+        return self.__deepcopy(self)
+
+    def __deepcopy(self, x, memo=None):
         out = SON()
-        val_id = id(self)
+        if memo is None:
+            memo = {}
+        val_id = id(x)
         if val_id in memo:
             return memo.get(val_id)
         memo[val_id] = out
         for k, v in self.iteritems():
-            if not isinstance(v, RE_TYPE):
+            if isinstance(v, dict) and not isinstance(v, SON):
+                v = self.__deepcopy(v, memo)
+            elif not isinstance(v, RE_TYPE):
                 v = copy.deepcopy(v, memo)
             out[k] = v
         return out

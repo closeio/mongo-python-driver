@@ -669,6 +669,19 @@ class TestCursor(unittest.TestCase):
         cursor4._Cursor__fields['cursor4'] = False
         self.assertFalse('cursor4' in cursor._Cursor__fields)
 
+        # test a nested regex with a son obj
+        query = SON([('y','1'), ("x", {'$not': re.compile("^hello.*")})])
+        cursor = self.db.test.find(query)
+        cursor2 = copy.deepcopy(cursor)
+        self.assertNotEqual(id(cursor._Cursor__spec),
+                            id(cursor2._Cursor__spec))
+
+        query = SON([('y','1'), ("x", {'$not': re.compile("^hello.*")})])
+        cursor = self.db.test.find(query)
+        cursor2 = cursor.clone()
+        self.assertNotEqual(id(cursor._Cursor__spec),
+                            id(cursor2._Cursor__spec))
+
         # Test memo when deepcopying queries
         query = {"hello": "world"}
         query["reflexive"] = query
